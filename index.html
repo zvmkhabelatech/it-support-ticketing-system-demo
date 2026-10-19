@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maminza Primary IT Support Dashboard - Zakhele Mkhabela</title>
+<link rel="stylesheet" href="style.css">
+<meta name="description" content="IT Support Ticketing System built by Zakhele Vincent Mkhabela for 23 staff at Maminza Primary School. PHP/MySQL">
+</head>
+<body>
+<div class="dashboard-wrapper">
+<header class="dashboard-header">
+<div class="header-brand">
+<div class="logo-box">M</div>
+<div><h1>Maminza Primary IT Support</h1>
+<div class="badges">
+<span class="badge-pill active"><span class="dot green"></span> Live portal • 23 staff active</span>
+<span class="badge-pill blue">PHP / MySQL Stack</span>
+<span class="badge-pill outline">e-Cadre support</span>
+</div></div></div>
+<div class="header-stats">
+<div class="stat-card"><span class="label">TOTAL</span><span class="value" id="stat-total">0</span><span class="subtext">tickets</span></div>
+<div class="stat-card"><span class="label"><span class="dot blue"></span> OPEN</span><span class="value" id="stat-open">0</span><span class="subtext">needs triage</span></div>
+<div class="stat-card"><span class="label"><span class="dot purple"></span> IN PROGRESS</span><span class="value" id="stat-progress">0</span><span class="subtext">being fixed</span></div>
+<div class="stat-card"><span class="label"><span class="dot green"></span> RESOLVED</span><span class="value" id="stat-resolved">0</span><span class="subtext">this week</span></div>
+</div>
+</header>
+
+<main class="dashboard-grid">
+<aside class="left-column">
+<section class="card-panel">
+<div class="panel-header"><div><h2>New Support Request</h2><p class="subtitle">Log issue for e-Cadre triage</p></div></div>
+<div id="success-msg" style="display:none;background:#064e3b;color:#34d399;padding:10px;border-radius:6px;margin-bottom:12px;font-size:13px"></div>
+<form id="ticket-form" class="ticket-form">
+<div class="form-group"><label>REQUESTER NAME</label><input type="text" id="name" placeholder="e.g. T. Mabaso" required></div>
+<div class="form-row">
+<div class="form-group"><label>DEPARTMENT</label>
+<select id="dept" required><option value="Admin">Admin</option><option value="Grade 1">Grade 1</option><option value="Grade 2">Grade 2</option><option value="Grade 3">Grade 3</option><option value="Grade 4">Grade 4</option><option value="Grade 5">Grade 5</option><option value="Grade 6">Grade 6</option><option value="Grade 7">Grade 7</option><option value="ICT Lab">ICT Lab</option></select></div>
+<div class="form-group"><label>CATEGORY</label>
+<select id="category" required><option value="Hardware">Hardware</option><option value="Software">Software</option><option value="Network">Network</option><option value="Email">Email</option><option value="Printer">Printer</option><option value="Other">Other</option></select></div>
+</div>
+<div class="form-group"><label>PRIORITY</label>
+<div class="priority-selector">
+<label><input type="radio" name="priority" value="Low"><span>Low</span></label>
+<label><input type="radio" name="priority" value="Medium" checked><span>Medium</span></label>
+<label><input type="radio" name="priority" value="High"><span>High</span></label>
+<label><input type="radio" name="priority" value="Critical"><span>Critical</span></label>
+</div></div>
+<div class="form-group"><label>SUBJECT</label><input type="text" id="subject" placeholder="e.g. Printer not connecting" required></div>
+<div class="form-group"><label>DESCRIPTION</label><textarea id="desc" rows="3" placeholder="Describe the issue..." required></textarea></div>
+<button type="submit" class="primary-btn">+ Log Ticket</button>
+</form>
+</section>
+
+<section class="card-panel case-study">
+<h3 style="font-size:14px;margin-bottom:10px">Problem → Solution</h3>
+<div class="timeline-item"><strong class="title red">BEFORE</strong><p>WhatsApp tracking for 23 staff • lost tickets, no SLA, zero visibility</p></div>
+<div class="timeline-item solution"><strong class="title blue">SOLUTION</strong><p>Lightweight portal: status tracking (Open → In Progress → Resolved), priority tagging, auto TCK codes, department filtering for Admin & 6 grade blocks.</p></div>
+<div class="tech-stack-section"><strong class="title gray">TECH STACK</strong><div class="chips"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>PHP 8.2</span><span>MySQL</span><span>GitHub Pages Demo</span></div></div>
+<div class="callout-box"><strong>Built for real-world constraints</strong><p>No complex dependencies. Works on school WiFi, low-spec admin PCs, mobile for teachers.</p>
+<p style="margin-top:8px"><a href="https://github.com/zvmkhabela/it-support-ticketing-system" style="color:#60a5fa">View Full PHP Code on GitHub →</a></p></div>
+</section>
+</aside>
+
+<section class="right-column card-panel">
+<div class="table-header">
+<div class="filter-chips">
+<button class="chip active" data-filter="All">All</button>
+<button class="chip" data-filter="Open">Open <span id="f-open">0</span></button>
+<button class="chip" data-filter="In Progress">In Progress <span id="f-progress">0</span></button>
+<button class="chip" data-filter="Resolved">Resolved <span id="f-resolved">0</span></button>
+</div>
+<input type="text" id="search" placeholder="Search code, staff, subject..." style="max-width:220px">
+</div>
+<div class="table-responsive">
+<table><thead><tr><th>CODE</th><th>REQUESTER</th><th>SUBJECT</th><th>PRIORITY</th><th>STATUS</th><th>DATE</th><th>ACTIONS</th></tr></thead>
+<tbody id="tickets-body"></tbody>
+</table>
+</div>
+</section>
+</main>
+<div style="text-align:center;margin-top:20px;color:#64748b;font-size:12px">Built by Zakhele Vincent Mkhabela • Technical EA & Web Ops Specialist • Mbombela, SA • <a href="https://github.com/zvmkhabela" style="color:#64748b">GitHub</a></div>
+</div>
+
+<script>
+const sampleTickets = [
+  {ticket_code:"TCK-2024-1001", requester_name:"Mrs. Nkosi", department:"Grade 4", category:"Printer", priority:"High", subject:"Printer not connecting", description:"Lab printer offline since morning, 23 learners affected", status:"Open", created_at:"2024-10-15"},
+  {ticket_code:"TCK-2024-1002", requester_name:"Mr. Dlamini", department:"Admin", category:"Network", priority:"Critical", subject:"WiFi down in admin block", description:"Cannot access SA-SAMS for submissions", status:"In Progress", created_at:"2024-10-14"},
+  {ticket_code:"TCK-2024-1003", requester_name:"Mrs. Mabuza", department:"Foundation Phase", category:"Software", priority:"Medium", subject:"MS Teams login issue", description:"Teams keeps asking for password", status:"Resolved", created_at:"2024-10-13"},
+  {ticket_code:"TCK-2024-1004", requester_name:"Mr. Khumalo", department:"Grade 6", category:"Hardware", priority:"High", subject:"Projector bulb failure", description:"Grade 6A projector not displaying", status:"Open", created_at:"2024-10-12"}
+];
+
+let tickets = JSON.parse(localStorage.getItem('maminza_tickets')) || sampleTickets;
+let currentFilter = 'All';
+
+function generateCode(){ return 'TCK-'+new Date().getFullYear()+'-'+String(Math.floor(Math.random()*9000)+1000); }
+
+function render(){
+  const search = document.getElementById('search').value.toLowerCase();
+  const body = document.getElementById('tickets-body');
+  body.innerHTML='';
+  let filtered = tickets.filter(t=>{
+    const matchFilter = currentFilter==='All' || t.status===currentFilter;
+    const matchSearch = !search || t.ticket_code.toLowerCase().includes(search) || t.requester_name.toLowerCase().includes(search) || t.subject.toLowerCase().includes(search);
+    return matchFilter && matchSearch;
+  });
+  filtered.forEach((t,i)=>{
+    const realIndex = tickets.indexOf(t);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="code-cell"><strong>${t.ticket_code}</strong><span class="time-ago" style="display:block;font-size:10px;color:#64748b">${t.created_at}</span></td>
+      <td><strong>${t.requester_name}</strong><div class="subtext">${t.department} • ${t.category}</div></td>
+      <td><strong>${t.subject}</strong><div class="subtext">${t.description.substring(0,40)}...</div></td>
+      <td><span class="priority-badge priority-${t.priority.toLowerCase()}">• ${t.priority}</span></td>
+      <td><span class="status-badge status-${t.status.toLowerCase().replace(' ','-')}">${t.status}</span></td>
+      <td>${t.created_at}</td>
+      <td>
+        <select onchange="updateStatus(${realIndex}, this.value)" class="status-dropdown">
+          <option ${t.status==='Open'?'selected':''}>Open</option>
+          <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${t.status==='Resolved'?'selected':''}>Resolved</option>
+          <option ${t.status==='Closed'?'selected':''}>Closed</option>
+        </select>
+        <button onclick="deleteTicket(${realIndex})" style="margin-left:6px;background:transparent;border:1px solid #1d2b45;color:#64748b;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">Del</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  });
+  updateStats();
+}
+
+function updateStats(){
+  const total = tickets.length;
+  const open = tickets.filter(t=>t.status==='Open').length;
+  const progress = tickets.filter(t=>t.status==='In Progress').length;
+  const resolved = tickets.filter(t=>t.status==='Resolved').length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-open').textContent=open;
+  document.getElementById('stat-progress').textContent=progress;
+  document.getElementById('stat-resolved').textContent=resolved;
+  document.getElementById('f-open').textContent=open;
+  document.getElementById('f-progress').textContent=progress;
+  document.getElementById('f-resolved').textContent=resolved;
+}
+
+function updateStatus(idx, newStatus){ tickets[idx].status=newStatus; save(); }
+function deleteTicket(idx){ if(confirm('Delete this ticket?')){ tickets.splice(idx,1); save(); } }
+function save(){ localStorage.setItem('maminza_tickets', JSON.stringify(tickets)); render(); }
+
+document.getElementById('ticket-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const newTicket = {
+    ticket_code: generateCode(),
+    requester_name: document.getElementById('name').value,
+    department: document.getElementById('dept').value,
+    category: document.getElementById('category').value,
+    priority: document.querySelector('input[name="priority"]:checked').value,
+    subject: document.getElementById('subject').value,
+    description: document.getElementById('desc').value,
+    status: 'Open',
+    created_at: new Date().toISOString().split('T')[0]
+  };
+  tickets.unshift(newTicket);
+  save();
+  e.target.reset();
+  const msg=document.getElementById('success-msg');
+  msg.textContent=`Ticket ${newTicket.ticket_code} logged successfully!`;
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',4000);
+});
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter=chip.dataset.filter;
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
